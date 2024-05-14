@@ -14,6 +14,7 @@ class Player():
         self.crouching = False
         self.crouch_time = 15
         self.score = 0
+        self.reward = 0
         
     def show_player(self,screen):
         if self.state =='Normal':
@@ -36,12 +37,16 @@ class Player():
             self.crouching = False
             self.crouch_time = 15   
             
-    def check_collisions(self,obstacle_cords):
+    def check_collisions(self,player_cords,obstacle_cords):
         if self.state == 'Normal':
-            if  self.player_cords[1] < obstacle_cords[1] < self.player_cords[1] + 80 and self.player_cords[0] < obstacle_cords[0] < self.player_cords[0] + 40:
+            if  player_cords[1] < obstacle_cords[1] < player_cords[1] + 80 and player_cords[0] < obstacle_cords[0] < player_cords[0] + 40:
+                self.reward -=10
                 return True
         elif self.state == 'Crouch':
-            if  self.player_cords[1] + 40 < obstacle_cords[1] < self.player_cords[1] + 80 and self.player_cords[0] < obstacle_cords[0] < self.player_cords[0] + 40:
+            if  player_cords[1] + 40 < obstacle_cords[1] < player_cords[1] + 80 and player_cords[0] < obstacle_cords[0] < player_cords[0] + 40:
+                self.reward -= 10
                 return True
             
-    
+    def check_reward(self,obstacle_cords):
+        if obstacle_cords == self.player_cords[0] - 10 :
+            self.reward += 10

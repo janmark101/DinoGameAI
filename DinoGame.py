@@ -1,9 +1,9 @@
 import pygame
 import Player
 import Obstacle
+import Agent
 
-
-class Game():
+class GameEnv():
     def __init__(self,width,height):
         self.width = int(width *0.5)
         self.height = int(height *0.375)
@@ -21,6 +21,8 @@ class Game():
         running = True
         is_playing = True
 
+        agent = Agent.Agent()
+
         while running:
             for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -32,17 +34,20 @@ class Game():
                               
             while is_playing:
                 self.screen.fill('grey')
-                #self.create_grid()
+                self.create_grid()
                 pygame.draw.line(self.screen,(0,0,0), (0, self.ground_cords[1] + 2*self.block_size), (self.width, self.ground_cords[1] + 2*self.block_size),2)
                 label = self.font.render(f"{self.player.score}", 5, (0,0,0))
                 self.screen.blit(label, (round((self.width*0.50) / self.block_size,0) * self.block_size, round((self.height*0.10) / self.block_size,0) * self.block_size))
                 
                 self.player.show_player(self.screen)
-                self.obstacle.create_obstacle(self.obstacle.kind_of_obstacle %2,self.screen)
+                self.obstacle.create_obstacle(self.screen)
+                self.player.check_reward(self.obstacle.obstacle_cords[0])
+
+                #pygame.draw.line(self.screen,(0,0,0), (self.player.player_cords[0] + 4*self.block_size, self.player.player_cords[1]-self.block_size), (self.player.player_cords[0] + 4*self.block_size, self.player.player_cords[1]),2)
                 
             
-                if self.player.check_collisions(self.obstacle.obstacle_cords):
-                    is_playing = False
+                # if self.player.check_collisions(self.player.player_cords,self.obstacle.obstacle_cords):
+                #     is_playing = False
                     
                 
                 for event in pygame.event.get():
@@ -67,13 +72,19 @@ class Game():
                     
                     
                 self.player.score += 1
+                
+                
+                
+                print(agent.get_state(self))
+                
                     
                 pygame.display.flip()
 
-                clock.tick(60)  # limits FPS to 60
+                clock.tick(60)  
 
         pygame.quit()
 
+    
 
     def create_grid(self):
         for x in range(0,self.width,self.block_size):
@@ -85,10 +96,12 @@ class Game():
         self.obstacle = Obstacle.Obstacle(self.width,self.height,self.block_size)
         self.player = Player.Player(self.width,self.height,self.block_size)
 
+
+
 pygame.init()
 screen_info = pygame.display.Info()
 
-game = Game(screen_info.current_w,screen_info.current_h)
+game = GameEnv(screen_info.current_w,screen_info.current_h)
 
-#game = Game(1920,1080)
+#game = GameEnv(1920,1080)
 
