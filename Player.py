@@ -8,7 +8,7 @@ class Player():
         self.gravity = 0.5
         self.player_cords = [round((self.width*0.10) / self.block_size,0) * self.block_size, round((self.height*0.70) / self.block_size,0) * self.block_size]  
         self.state = 'Normal'
-        self.jumpt_count = 0
+        self.jump_count = 0
         self.jump_value = 15
         self.jumping = False
         self.crouching = False
@@ -49,4 +49,5 @@ class Player():
             
     def check_reward(self,obstacle_cords):
         if obstacle_cords == self.player_cords[0] - 10 :
-            self.reward += 10
+            return True
+        return False

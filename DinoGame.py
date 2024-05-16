@@ -1,7 +1,6 @@
 import pygame
 import Player
 import Obstacle
-import Agent
 
 class GameEnv():
     def __init__(self,width,height):
@@ -13,15 +12,15 @@ class GameEnv():
         self.obstacle = Obstacle.Obstacle(self.width,self.height,self.block_size)
         self.font = pygame.font.SysFont("monospace", 25)
         self.ground_cords = self.player.player_cords.copy()
-        self.run_game()
-        
+        #self.run_game()
+        self.clock = pygame.time.Clock()
         
     def run_game(self):
         clock = pygame.time.Clock()
         running = True
         is_playing = True
 
-        agent = Agent.Agent()
+        
 
         while running:
             for event in pygame.event.get():
@@ -41,9 +40,10 @@ class GameEnv():
                 
                 self.player.show_player(self.screen)
                 self.obstacle.create_obstacle(self.screen)
-                self.player.check_reward(self.obstacle.obstacle_cords[0])
+                # if self.player.check_reward(self.obstacle.obstacle_cords[0]):
+                #     self.player.reward 
 
-                #pygame.draw.line(self.screen,(0,0,0), (self.player.player_cords[0] + 4*self.block_size, self.player.player_cords[1]-self.block_size), (self.player.player_cords[0] + 4*self.block_size, self.player.player_cords[1]),2)
+                # pygame.draw.line(self.screen,(0,0,0), (self.player.player_cords[0] + 4*self.block_size, self.player.player_cords[1]-self.block_size), (self.player.player_cords[0] + 4*self.block_size, self.player.player_cords[1]),2)
                 
             
                 # if self.player.check_collisions(self.player.player_cords,self.obstacle.obstacle_cords):
@@ -75,7 +75,7 @@ class GameEnv():
                 
                 
                 
-                print(agent.get_state(self))
+ 
                 
                     
                 pygame.display.flip()
@@ -95,8 +95,62 @@ class GameEnv():
     def restart(self):
         self.obstacle = Obstacle.Obstacle(self.width,self.height,self.block_size)
         self.player = Player.Player(self.width,self.height,self.block_size)
+        
+    def update_game(self):
+        self.screen.fill('grey')
+        self.create_grid()
+        pygame.draw.line(self.screen,(0,0,0), (0, self.ground_cords[1] + 2*self.block_size), (self.width, self.ground_cords[1] + 2*self.block_size),2)
+        label = self.font.render(f"{self.player.score}", 5, (0,0,0))
+        self.screen.blit(label, (round((self.width*0.50) / self.block_size,0) * self.block_size, round((self.height*0.10) / self.block_size,0) * self.block_size))
+        
+        self.player.show_player(self.screen)
+        self.obstacle.create_obstacle(self.screen)
+        
+        pygame.display.flip()
+        
+    def step(self,action):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+        
+        self.move(action)
+        reward = 0
+        game_over = False
+        if self.player.check_collisions(self.player.player_cords,self.obstacle.obstacle_cords):
+            reward = -10
+            game_over = True
+            return reward,game_over,self.player.score
+        
+        if self.player.check_reward(self.obstacle.obstacle_cords[0]):
+            reward = 1
+            
+        self.player.score += 1
+        self.update_game()
+        self.clock.tick(60)
+            
+        return reward,game_over,self.player.score
 
 
+    def move(self,action):
+        if action == [0,0,1]:
+            pass
+        if action == [0,1,0]:
+            if not self.player.jumping and not self.player.crouching:
+                self.player.jumping = True
+                self.player.jump_count = self.player.jump_value
+        elif action == [1,0,0]:
+            if not self.player.jumping and not self.player.crouching:
+                self.player.state = 'Crouch'
+                self.player.crouching = True
+                
+        if self.player.jumping:
+            self.player.jump()
+
+            
+        if self.player.crouching:
+            self.player.crouch()
+            
 
 pygame.init()
 screen_info = pygame.display.Info()
